@@ -1,5 +1,5 @@
 import { UserRecord } from "./types";
-import { type UserInfo, byrdocs_login, refresh } from "@byrdocs/bupt-auth";
+import { type UserInfo, login, refresh } from "@byrdocs/bupt-auth";
 import log from "./log";
 
 function base64UrlDecode(str: string) {
@@ -31,7 +31,7 @@ export async function getToken(username: string, password: string | null, db: D1
         .all();
     async function reLogin() {
         if (!password?.length) throw new Error('Password required');
-        const userinfo = await byrdocs_login(username, password, ocr_token);
+        const userinfo = await login(username, password, { ocr: { token: ocr_token } });
         await db.prepare('INSERT INTO users (username, password, userinfo) VALUES (?,?,?) ON CONFLICT (username) DO UPDATE SET password = excluded.password, userinfo = excluded.userinfo')
             .bind(username, password, JSON.stringify(userinfo))
             .run();
