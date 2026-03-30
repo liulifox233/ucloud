@@ -4,10 +4,12 @@ import { getUndoneList, getDetail, searchCourse, searchCourses, getResource, get
 import log from './log';
 import { Homework, UploadResponse, UndoneListResponse, BasicResponse } from './types';
 import { LoginError, UserInfo } from '@byrdocs/bupt-auth';
+import { v4 as uuid } from 'uuid'
+import { handleMcp } from './mcp'
 
 const jsonHeaders = { headers: { 'Content-Type': 'application/json' } }
 
-function isNumeric(str: string) {
+export function isNumeric(str: string) {
 	if (str.length === 0) return false;
 	for (let i = 0; i < str.length; i++) {
 		if (!Number.isInteger(Number(str[i]))) {
@@ -52,7 +54,7 @@ const handleAuthRoutes: RouteHandler = async (request: IRequest, env: Env, ctx: 
 	}
 };
 
-async function getInfoWithCache(userinfo: UserInfo, id: string, keyword: string, db: D1Database) {
+export async function getInfoWithCache(userinfo: UserInfo, id: string, keyword: string, db: D1Database) {
 	const last = await db.prepare(`SELECT info FROM homeworks WHERE id = ?`)
 		.bind(id)
 		.first();
@@ -258,6 +260,15 @@ router
 			},
 		});
 	})
+
+	.post('/token', handleAuthRoutes, async ({ token }, env: Env) => {
+		const newToken = uuid();
+		await env.DB.prepare(
+			'INSERT INTO mcp_tokens (token, username) VALUES (?, ?) ON CONFLICT(username) DO UPDATE SET token = excluded.token'
+		).bind(newToken, (token as UserInfo).user_name).run();
+		return new Response(JSON.stringify({ token: newToken }), jsonHeaders);
+	})
+	.post('/mcp', (request: IRequest, env: Env, ctx: ExecutionContext) => handleMcp(request, env))
 	.all('*', (request) => {
 		return Response.redirect("https://github.com/youXam/ucloud", 302)
 	});
