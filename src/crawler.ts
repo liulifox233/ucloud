@@ -1,6 +1,6 @@
 
 import { UserInfo } from "@byrdocs/bupt-auth";
-import { UndoneListResponse, DetailResponse, Resource, ResourceDetailResponse, PreviewUrlResponse, UndoneListItem, CourseInfo, ItemResponse } from "./types";
+import { UndoneListResponse, DetailResponse, Resource, ResourceDetailResponse, PreviewUrlResponse, UndoneListItem, CourseInfo, ItemResponse, SiteResourceTreeResponse } from "./types";
 
 
 export async function getUndoneList(userinfo: UserInfo): Promise<UndoneListResponse> {
@@ -197,6 +197,22 @@ export async function getPreviewURL(resourceId: string) {
     const json: PreviewUrlResponse = await res.json();
     return json.data.previewUrl;
 }
+export async function getSiteResourceTree(userinfo: UserInfo, siteId: string): Promise<SiteResourceTreeResponse> {
+    const res = await fetch(`https://apiucloud.bupt.edu.cn/ykt-site/site-resource/tree/student?siteId=${siteId}&userId=${userinfo.user_id}`, {
+        "headers": {
+            "authorization": "Basic cG9ydGFsOnBvcnRhbF9zZWNyZXQ=",
+            "blade-auth": userinfo.access_token,
+            "content-type": "application/json",
+            "Referer": "https://ucloud.bupt.edu.cn/",
+            "Referrer-Policy": "strict-origin-when-cross-origin"
+        },
+        "body": "{}",
+        "method": "POST"
+    });
+    const json: SiteResourceTreeResponse = await res.json();
+    return json;
+}
+
 export async function getResource(userinfo: UserInfo, resources: Resource[]) {
     if (resources.length === 0) {
         return []

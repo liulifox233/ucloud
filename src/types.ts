@@ -94,3 +94,28 @@ export type DetailResponse = { data: Detail } & BasicResponse;
 export type ResourceDetailResponse = { data: ResourceDetail[] } & BasicResponse;
 export type PreviewUrlResponse = { data: { previewUrl: string } } & BasicResponse;
 export type UploadResponse = { data: string } & BasicResponse;
+
+export interface SiteResourceAttachment {
+    id: string;
+    resource: {
+        id: string;
+        name: string;
+        ext: string;
+        fileSize: number;
+        fileSizeUnit: string;
+        storageId: string;
+        url: string;
+    };
+}
+
+export interface SiteResourceNode {
+    id: string;
+    siteId: string;
+    resourceName: string;
+    resourceType: number;
+    hasChildNode: number;
+    children: SiteResourceNode[];
+    attachmentVOs: SiteResourceAttachment[];
+}
+
+export type SiteResourceTreeResponse = { data: SiteResourceNode[] } & BasicResponse;

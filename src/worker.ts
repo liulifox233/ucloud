@@ -1,6 +1,6 @@
 import { Router, RouteHandler, IRequest } from 'itty-router';
 import { getToken } from './auth';
-import { getUndoneList, getDetail, searchCourse, searchCourses, getResource, getPreviewURL } from './crawler';
+import { getUndoneList, getDetail, searchCourse, searchCourses, getResource, getPreviewURL, getSiteResourceTree } from './crawler';
 import log from './log';
 import { Homework, UploadResponse, UndoneListResponse, BasicResponse } from './types';
 import { LoginError, UserInfo } from '@byrdocs/bupt-auth';
@@ -269,6 +269,17 @@ router
 		return new Response(JSON.stringify({ token: newToken }), jsonHeaders);
 	})
 	.post('/mcp', (request: IRequest, env: Env, ctx: ExecutionContext) => handleMcp(request, env))
+	.get('/site-resource-tree', handleAuthRoutes, async ({ query, token }, env: Env) => {
+		const siteId = query.siteId;
+		if (!siteId || typeof siteId !== 'string') {
+			return new Response('Invalid siteId', { status: 400 });
+		}
+		const res = await getSiteResourceTree(token as UserInfo, siteId);
+		if (!res.success) {
+			return new Response(res.msg, { status: 500 });
+		}
+		return new Response(JSON.stringify(res.data), jsonHeaders);
+	})
 	.all('*', (request) => {
 		return Response.redirect("https://github.com/youXam/ucloud", 302)
 	});
